@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Discord Onboarding Exporter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --bg2: #13151c;
+      --bg3: #1a1d27;
+      --border: #252836;
+      --accent: #5865f2;
+      --accent2: #eb459e;
+      --green: #23a55a;
+      --yellow: #f0b132;
+      --red: #ed4245;
+      --text: #e8eaf0;
+      --muted: #5c6370;
+      --success: #57f287;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      width: 400px;
+      min-height: 220px;
+      max-height: 640px;
+      background: var(--bg);
+      font-family: 'Syne', sans-serif;
+      color: var(--text);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, var(--bg2), #141726);
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+      position: relative; overflow: hidden;
+    }
+    .header::after {
+      content:''; position:absolute; top:-20px; right:-20px;
+      width:90px; height:90px;
+      background: radial-gradient(circle, rgba(88,101,242,0.25) 0%, transparent 70%);
+    }
+    .logo {
+      width:40px; height:40px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius:12px; display:flex; align-items:center; justify-content:center;
+      font-size:22px; flex-shrink:0;
+      box-shadow: 0 4px 14px rgba(88,101,242,0.35);
+    }
+    .header-text h1 { font-size:14px; font-weight:800; letter-spacing:-0.3px; }
+    .header-text p { font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; margin-top:2px; }
+    .btn-main {
+      margin-left:auto;
+      background: linear-gradient(135deg, var(--accent), #4752c4);
+      border:none; color:white; padding:9px 16px; border-radius:9px;
+      font-family:'Syne',sans-serif; font-weight:700; font-size:12px;
+      cursor:pointer; transition:all 0.2s; white-space:nowrap; flex-shrink:0;
+    }
+    .btn-main:hover { opacity:0.85; transform:scale(0.97); }
+    .btn-main:disabled { opacity:0.5; pointer-events:none; }
+
+    /* SERVER INFO */
+    .server-info {
+      display:none;
+      background: var(--bg2);
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--border);
+      align-items: center; gap: 10px;
+    }
+    .server-info.visible { display:flex; }
+    .server-avatar {
+      width:32px; height:32px; border-radius:50%;
+      background: var(--bg3); overflow:hidden; flex-shrink:0;
+      border: 2px solid var(--border);
+    }
+    .server-avatar img { width:100%; height:100%; object-fit:cover; }
+    .server-name { font-size:13px; font-weight:700; }
+    .server-id { font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; }
+
+    /* SECTIONS */
+    .sections {
+      display:none;
+      flex-direction:column;
+      overflow-y:auto;
+      flex:1;
+      max-height:480px;
+    }
+    .sections.visible { display:flex; }
+    .sections::-webkit-scrollbar { width:3px; }
+    .sections::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+    .section {
+      border-bottom: 1px solid var(--border);
+      overflow:hidden;
+    }
+    .section-header {
+      display:flex; align-items:center; gap:10px;
+      padding: 12px 18px;
+      cursor:pointer;
+      transition: background 0.15s;
+      user-select:none;
+    }
+    .section-header:hover { background:var(--bg2); }
+    .section-icon { font-size:18px; flex-shrink:0; }
+    .section-title { font-size:13px; font-weight:700; flex:1; }
+    .section-count {
+      font-size:10px; font-family:'DM Mono',monospace;
+      color:var(--muted); background:var(--bg3);
+      padding:2px 7px; border-radius:10px;
+    }
+    .section-arrow { color:var(--muted); font-size:12px; transition:transform 0.2s; }
+    .section.open .section-arrow { transform:rotate(90deg); }
+
+    .section-body {
+      display:none;
+      padding: 0 18px 14px;
+      background: var(--bg);
+    }
+    .section.open .section-body { display:block; }
+
+    /* Items */
+    .item {
+      display:flex; align-items:flex-start; gap:10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .item:last-child { border-bottom:none; }
+    .item-icon {
+      width:30px; height:30px; border-radius:8px;
+      background:var(--bg3); overflow:hidden; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px; border:1px solid var(--border);
+    }
+    .item-icon img { width:100%; height:100%; object-fit:cover; border-radius:7px; }
+    .item-text { flex:1; }
+    .item-title { font-size:12px; font-weight:700; line-height:1.3; }
+    .item-sub { font-size:10px; color:var(--muted); font-family:'DM Mono',monospace; margin-top:2px; }
+    .item-content { font-size:11px; color:#9da5b4; margin-top:4px; line-height:1.4; }
+
+    .tag {
+      display:inline-block; font-size:9px; padding:1px 6px; border-radius:4px;
+      font-family:'DM Mono',monospace; margin-right:4px; margin-top:3px;
+    }
+    .tag-req { background:rgba(235,69,158,0.15); color:var(--accent2); }
+    .tag-opt { background:rgba(88,101,242,0.15); color:#a0aaff; }
+    .tag-choice { background:rgba(87,242,135,0.12); color:var(--success); }
+
+    /* Download bar */
+    .dl-bar {
+      display:none;
+      background: var(--bg2);
+      padding: 10px 18px;
+      border-top: 1px solid var(--border);
+      gap: 8px;
+    }
+    .dl-bar.visible { display:flex; }
+    .btn-dl {
+      flex:1; background:linear-gradient(135deg, var(--green), #1a7a42);
+      border:none; color:white; padding:10px; border-radius:9px;
+      font-family:'Syne',sans-serif; font-weight:700; font-size:12px;
+      cursor:pointer; transition:all 0.2s;
+    }
+    .btn-dl:hover { opacity:0.85; transform:scale(0.98); }
+    .btn-dl:disabled { opacity:0.5; pointer-events:none; }
+
+    /* States */
+    .state {
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:center; padding:44px 24px; text-align:center; gap:12px; flex:1;
+    }
+    .state-icon { font-size:42px; }
+    .state-title { font-size:15px; font-weight:800; }
+    .state-desc { font-size:11px; color:var(--muted); line-height:1.6; font-family:'DM Mono',monospace; }
+
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    .spin { animation:spin 1s linear infinite; display:inline-block; }
+
+    /* Toast */
+    .toast {
+      position:fixed; bottom:10px; left:50%; transform:translateX(-50%);
+      background:var(--green); color:white; padding:7px 16px; border-radius:20px;
+      font-size:11px; font-weight:700; opacity:0; pointer-events:none;
+      transition:opacity 0.3s; white-space:nowrap; z-index:999;
+    }
+    .toast.show { opacity:1; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">📋</div>
+    <div class="header-text">
+      <h1>Onboarding Exporter</h1>
+      <p>discord.com · incorporación</p>
+    </div>
+    <button class="btn-main" id="btnScan">Escanear</button>
+  </div>
+
+  <div class="server-info" id="serverInfo">
+    <div class="server-avatar" id="serverAvatar"><span>🏠</span></div>
+    <div>
+      <div class="server-name" id="serverName">Servidor</div>
+      <div class="server-id" id="serverId"></div>
+    </div>
+  </div>
+
+  <div id="mainContent">
+    <div class="state">
+      <div class="state-icon">📋</div>
+      <div class="state-title">Onboarding Exporter</div>
+      <div class="state-desc">Entra a un servidor de Discord,<br>haz clic en un canal y presiona<br><strong>Escanear</strong>.</div>
+    </div>
+  </div>
+
+  <div class="dl-bar" id="dlBar">
+    <button class="btn-dl" id="btnDownload">⬇️ Descargar ZIP completo</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
